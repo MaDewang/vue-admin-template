@@ -1,15 +1,15 @@
 <template>
   <div class="login-container">
     <el-form
-      ref="loginForm"
-      :model="loginForm"
-      :rules="loginRules"
+      ref="registerForm"
+      :model="registerForm"
+      :rules="registerRules"
       class="login-form"
       auto-complete="on"
       label-position="left"
     >
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">Register Form</h3>
       </div>
 
       <el-form-item prop="username">
@@ -18,8 +18,8 @@
         </span>
         <el-input
           ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
+          v-model="registerForm.username"
+          placeholder="用户名"
           name="username"
           type="text"
           tabindex="1"
@@ -34,9 +34,31 @@
         <el-input
           :key="passwordType"
           ref="password"
-          v-model="loginForm.password"
+          v-model="registerForm.password"
           :type="passwordType"
-          placeholder="Password"
+          placeholder="密码"
+          name="password"
+          tabindex="2"
+          auto-complete="on"
+          @keyup.enter.native="handleLogin"
+        />
+        <span class="show-pwd" @click="showPwd">
+          <svg-icon
+            :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
+          />
+        </span>
+      </el-form-item>
+
+      <el-form-item prop="password">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          :key="passwordType"
+          ref="password"
+          v-model="registerForm.passwordAgain"
+          :type="passwordType"
+          placeholder="确认密码"
           name="password"
           tabindex="2"
           auto-complete="on"
@@ -54,12 +76,12 @@
         type="primary"
         style="width: 100%; margin-bottom: 30px"
         @click.native.prevent="handleLogin"
-        >登 录</el-button
+        >注 册</el-button
       >
-
       <div class="tips">
-        <span style="margin-right: 5px">没有账号？</span>
-        <router-link :to="'/register'">去注册</router-link>
+        <router-link class="router-link" :to="'/login'"
+          >登录你的账号</router-link
+        >
       </div>
     </el-form>
   </div>
@@ -85,31 +107,35 @@ export default {
         callback();
       }
     };
+    const validatePasswordAgain = (rule, value, callback) => {
+      if (value.length < 6) {
+        callback(new Error("The password can not be less than 6 digits"));
+      } else if (value !== this.registerForm.password) {
+        callback(new Error("两次输入的密码不相同！"));
+      } else {
+        callback();
+      }
+    };
     return {
-      loginForm: {
-        username: "admin",
-        password: "111111",
+      registerForm: {
+        username: "",
+        password: "",
+        passwordAgain: "",
       },
-      loginRules: {
+      registerRules: {
         username: [
           { required: true, trigger: "blur", validator: validateUsername },
         ],
         password: [
           { required: true, trigger: "blur", validator: validatePassword },
         ],
+        passwordAgain: [
+          { required: true, trigger: "blur", validator: validatePasswordAgain },
+        ],
       },
       loading: false,
       passwordType: "password",
-      redirect: undefined,
     };
-  },
-  watch: {
-    $route: {
-      handler: function (route) {
-        this.redirect = route.query && route.query.redirect;
-      },
-      immediate: true,
-    },
   },
   methods: {
     showPwd() {
@@ -123,18 +149,15 @@ export default {
       });
     },
     handleLogin() {
-      this.$refs.loginForm.validate((valid) => {
+      this.$refs.registerForm.validate((valid) => {
         if (valid) {
-          this.loading = true;
-          this.$store
-            .dispatch("user/login", this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || "/" });
-              this.loading = false;
-            })
-            .catch(() => {
-              this.loading = false;
-            });
+          // this.loading = true;
+          // 提示正在开发中
+          this.$message({
+            message: "正在开发中",
+            type: "warning",
+            duration: 5 * 1000,
+          });
         } else {
           console.log("error submit!!");
           return false;
@@ -229,7 +252,7 @@ $light_gray: #333;
         margin-right: 16px;
       }
     }
-    a {
+    .router-link {
       color: #056de8;
     }
   }
